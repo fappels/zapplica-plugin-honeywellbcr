@@ -1,0 +1,19 @@
+{
+  "name": "HoneywellBCR",
+  "version": "1.0.1",
+  "description": "read data from Honeywell barcode scanner",
+  "cordova": {
+    "id": "zapplica-plugin-honeywellbcr",
+    "platforms": [
+      "android"
+    ]
+  },
+  "keywords": [
+    "BroadcastReceiver",
+    "barcode reader",
+    "ecosystem:cordova",
+    "cordova-android"
+  ],
+  "author": "francis.appels@z-application.com",
+  "license": "Apache License 2.0"
+}
