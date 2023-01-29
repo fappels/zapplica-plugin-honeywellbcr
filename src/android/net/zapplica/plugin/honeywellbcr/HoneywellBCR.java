@@ -69,8 +69,8 @@ public class HoneywellBCR extends CordovaPlugin {
     private boolean bCodeScanReceiverRegistered = false;
 
     // Member fields
-    private String szComData;
-    private String szComResult;
+    private JSONObject szComData;
+	private String szComResult;
     private static final String ACTION_BARCODE_DATA = "com.honeywell.action.MY_BARCODE_DATA";
     private static final String EXTRA_CONTROL = "com.honeywell.aidc.action.ACTION_CONTROL_SCANNER";
     private static final String EXTRA_SCAN = "com.honeywell.aidc.extra.EXTRA_SCAN";
@@ -193,7 +193,7 @@ public class HoneywellBCR extends CordovaPlugin {
                                 callbackContext.sendPluginResult(result);
                                 mState = STATE_READING;
                                 if (D)
-                                    Log.d(TAG, "Read result = " + szComResult);
+                                    Log.d(TAG, "Read timestamp = " + szComResult);
                                 Thread.sleep(500);
                             } catch (InterruptedException e) {
                                 mState = STATE_ERROR;
@@ -201,7 +201,7 @@ public class HoneywellBCR extends CordovaPlugin {
                                 break;
                             }
                         } else if ((mState == STATE_DESTROYED) || (mState == STATE_ERROR)) {
-                            callbackContext.error("Not Read");
+                            if (mState == STATE_ERROR) callbackContext.error("Not Read");
                             break;
                         }
                         try {
@@ -241,13 +241,23 @@ public class HoneywellBCR extends CordovaPlugin {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
 
-            if (action.equals(ACTION_BARCODE_DATA)) {
-                Bundle bundle = new Bundle();
-                bundle = intent.getExtras();
-                assert bundle != null;
-                szComData = bundle.getString("data");
-                szComResult = bundle.getString("RESULT");
-                mState = STATE_READ;
+            if (action.equals(ACTION_BARCODE_DATA) && mState == STATE_READING) {
+                int version = intent.getIntExtra("version", 0);
+                if (version >= 1) {
+                    Bundle bundle = new Bundle();
+                    bundle = intent.getExtras();
+                    assert bundle != null;
+                    JSONObject obj = new JSONObject();
+                    try {
+                        obj.put("text", bundle.getString("data"));
+                        obj.put("format", bundle.getString("codeId"));
+                    } catch (Exception e) {
+                        Log.e(TAG, "Exception occured:" + e.getMessage());
+                    }
+                    szComData = obj;
+                    szComResult = bundle.getString("timestamp");
+                    mState = STATE_READ;
+                }
             }
         }
     }
